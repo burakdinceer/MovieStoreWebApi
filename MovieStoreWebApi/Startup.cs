@@ -8,6 +8,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MovieStoreWebApi.DBOperations;
+using MovieStoreWebApi.Entites;
+using MovieStoreWebApi.Interfaces;
+using MovieStoreWebApi.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +37,18 @@ namespace MovieStoreWebApi
             {
                 opt.UseSqlServer("Server=DESKTOP-7IFFEOA\\SQLEXPRESS;Database=MovieDb;Trusted_Connection=True");
             });
+
+
+            services.AddScoped<IGenericRepository<Movie>, GenericRepository<Movie>>();
+            services.AddScoped<IGenericRepository<Customer>, GenericRepository<Customer>>();
+            services.AddScoped<IGenericRepository<Director>, GenericRepository<Director>>();
+            services.AddScoped<IGenericRepository<Favorite>, GenericRepository<Favorite>>();
+            services.AddScoped<IGenericRepository<MovieDirector>, GenericRepository<MovieDirector>>();
+            services.AddScoped<IGenericRepository<MovieRole>, GenericRepository<MovieRole>>();
+            services.AddScoped<IGenericRepository<Purchase>, GenericRepository<Purchase>>();
+            services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
+           
+
 
             services.AddSwaggerGen(c =>
             {

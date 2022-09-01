@@ -1,6 +1,8 @@
-﻿using MovieStoreWebApi.DBOperations;
+﻿using Microsoft.EntityFrameworkCore;
+using MovieStoreWebApi.DBOperations;
 using MovieStoreWebApi.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MovieStoreWebApi.Repositories
 {
@@ -10,31 +12,39 @@ namespace MovieStoreWebApi.Repositories
         public GenericRepository(MovieStoreDbContext context)
         {
             _context = context;
-        }        
+        }
 
         public T AddT(T entity)
         {
-            throw new System.NotImplementedException();
+           _context.Add(entity);
+            _context.SaveChanges();
+            return entity;
         }
 
         public void DeleteById(int id)
         {
-            throw new System.NotImplementedException();
+          
+            _context.SaveChanges();
+
         }
 
         public T GetById(int id)
         {
-            throw new System.NotImplementedException();
+           return _context.Set<T>().Find(id);
+            
         }
 
         public List<T> GetList()
         {
-            throw new System.NotImplementedException();
+            var list = _context.Set<T>().ToList();
+            return list;
         }
 
         public T UpdateById(T entity)
         {
-            throw new System.NotImplementedException();
+            _context.Entry(entity).State = EntityState.Modified;
+            _context.SaveChanges();
+            return entity;
         }
     }
 }

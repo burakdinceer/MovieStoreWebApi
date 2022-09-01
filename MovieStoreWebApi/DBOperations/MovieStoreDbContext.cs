@@ -9,6 +9,10 @@ namespace MovieStoreWebApi.DBOperations
         {
 
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+        }
 
         public DbSet<Movie> movies { get; set; }
         public DbSet<Customer> customers { get; set; }

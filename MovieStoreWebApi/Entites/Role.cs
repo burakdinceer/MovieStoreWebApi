@@ -11,6 +11,6 @@ namespace MovieStoreWebApi.Entites
         public string Name { get; set; }
         public string Surname { get; set; }
         public bool Active { get; set; } = true;
-        public ICollection<MovieRole> movieRoles { get; set; }
+        public virtual ICollection<MovieRole> movieRoles { get; set; }
     }
 }

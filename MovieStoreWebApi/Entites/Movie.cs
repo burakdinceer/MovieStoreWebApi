@@ -14,9 +14,9 @@ namespace MovieStoreWebApi.Entites
         public string Genre { get; set; }
         public int Price { get; set; }
         public bool Active { get; set; } = true;
-        public ICollection<MovieRole> movieRoles { get; set; }
-        public ICollection<MovieDirector> movieDirectors { get; set; }
-
+        public virtual ICollection<MovieRole> movieRoles { get; set; }
+        public virtual ICollection<MovieDirector> movieDirectors { get; set; }
+        public virtual ICollection<Favorite> favorites { get; set; }
 
     }
 }

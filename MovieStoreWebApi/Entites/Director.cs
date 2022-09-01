@@ -10,6 +10,6 @@ namespace MovieStoreWebApi.Entites
         public string Name { get; set; }
         public string Surname { get; set; }
         public bool Active { get; set; } = true;
-        public ICollection<MovieDirector> movieDirectors { get; set; }
+        public virtual ICollection<MovieDirector> movieDirectors { get; set; }
     }
 }

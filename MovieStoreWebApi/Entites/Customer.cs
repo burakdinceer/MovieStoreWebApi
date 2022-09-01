@@ -10,7 +10,7 @@ namespace MovieStoreWebApi.Entites
         public string Name { get; set; }  
         public string Surname { get; set; }
         public bool Active { get; set; } = true;
-        public ICollection<Purchase> purchases { get; set; }
-        public ICollection<Favorite> favorites { get; set; }
+        public virtual ICollection<Purchase> purchases { get; set; }
+        public virtual ICollection<Favorite> favorites { get; set; }
     }
 }
