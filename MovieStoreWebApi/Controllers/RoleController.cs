@@ -13,6 +13,7 @@ namespace MovieStoreWebApi.Controllers
     [ApiController]
     public class RoleController : ControllerBase
     {
+
         private readonly IGenericRepository<Role> _roleRepository;
         public RoleController(IGenericRepository<Role> roleRepository)
         {
