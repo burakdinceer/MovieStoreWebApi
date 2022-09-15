@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MovieStoreWebApi.Entites;
 using MovieStoreWebApi.Interfaces;
@@ -14,10 +15,11 @@ namespace MovieStoreWebApi.Controllers
     public class MovieController : ControllerBase
     {
         private readonly IGenericRepository<Movie> _movieRepository;
-
-        public MovieController(IGenericRepository<Movie> movieRepository)
+        private readonly IValidator<AddRequestVM> _addRequestVMValidator;
+        public MovieController(IGenericRepository<Movie> movieRepository, IValidator<AddRequestVM> addRequestVMValidator)
         {
             _movieRepository = movieRepository;
+            _addRequestVMValidator = addRequestVMValidator;
         }
 
         [HttpGet]
@@ -31,6 +33,10 @@ namespace MovieStoreWebApi.Controllers
                 Name = x.Name,
                 Price = x.Price,
                 ReleaseDate = x.ReleaseDate,
+                DirectorNames = string.Join(',', x.movieDirectors.Select(x => x.Director.Name).ToList()),
+                DirectorSurnames = string.Join(',', x.movieDirectors.Select(x => x.Director.Surname).ToList()),
+                RoleNames = string.Join(',', x.movieRoles.Select(x => x.Role.Name).ToList()),
+                RoleSurnames = string.Join(',', x.movieRoles.Select(x => x.Role.Surname).ToList()),
                 Active = x.Active
             }).Where(x => x.Active == true).ToList();
 
@@ -54,6 +60,10 @@ namespace MovieStoreWebApi.Controllers
                     Name = x.Name,
                     Price = x.Price,
                     ReleaseDate = x.ReleaseDate,
+                    DirectorNames = string.Join(',', x.movieDirectors.Select(x => x.Director.Surname).ToList()),
+                    DirectorSurnames = string.Join(',', x.movieDirectors.Select(x=>x.Director.Surname).ToList()),
+                    RoleNames = string.Join(',',x.movieRoles.Select(x => x.Role.Name).ToList()),
+                    RoleSurnames = string.Join(',',x.movieRoles.Select(x => x.Role.Surname).ToList()),
                     Active = x.Active = true
 
                 }).SingleOrDefault();
@@ -74,12 +84,22 @@ namespace MovieStoreWebApi.Controllers
                 Price = model.Price,
 
             };
-            var create = _movieRepository.AddT(newMovie);
-            if (create == null)
-                return BadRequest();
+            var validateResult = _addRequestVMValidator.Validate(model);
+            var messages = new List<string>();
+            if(validateResult.IsValid)
+            {
+                var create = _movieRepository.AddT(newMovie);
+                messages.Add("Başarılı");
+                return Ok(messages);
+            }
+                
             else
             {
-                return Ok(create);
+                foreach (var item in validateResult.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+                }
+                return BadRequest(messages);
             }
 
         }
@@ -98,18 +118,33 @@ namespace MovieStoreWebApi.Controllers
                 get.Price = model.Price;
 
             }
-            _movieRepository.UpdateById(get);
-            var result = _movieRepository.GetById(id);
-
-            ListVM vm = new ListVM
+            var validateResult = _addRequestVMValidator.Validate(model);
+            var messages = new List<string>();
+            if (validateResult.IsValid)
             {
-                Genre = result.Genre,
-                Name = result.Name,
-                Price = result.Price,
-                ReleaseDate = result.ReleaseDate,
-            };
-            return Ok(vm);
+                _movieRepository.UpdateById(get);
+                var result = _movieRepository.GetById(id);
 
+                ListVM vm = new ListVM
+                {
+                    Genre = result.Genre,
+                    Name = result.Name,
+                    Price = result.Price,
+                    ReleaseDate = result.ReleaseDate,
+                };
+                messages.Add("Başarılı");
+                return Ok(messages);
+            }
+            else
+            {
+                foreach (var item in validateResult.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+
+                }
+                return BadRequest(messages);
+            }
+           
         }
 
         [HttpDelete]

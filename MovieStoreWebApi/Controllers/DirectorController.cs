@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MovieStoreWebApi.Entites;
 using MovieStoreWebApi.Interfaces;
 using MovieStoreWebApi.Models.ModelsDirector.Request;
 using MovieStoreWebApi.Models.ModelsDirector.Response;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,9 +16,11 @@ namespace MovieStoreWebApi.Controllers
     public class DirectorController : ControllerBase
     {
         private readonly IGenericRepository<Director> _directorRepository;
-        public DirectorController(IGenericRepository<Director> directorRepository)
+        private readonly IValidator<DirectorRequestVM> _directorRequestVMValidator;
+        public DirectorController(IGenericRepository<Director> directorRepository, IValidator<DirectorRequestVM> directorRequestVMValidator)
         {
             _directorRepository = directorRepository;
+            _directorRequestVMValidator = directorRequestVMValidator;
         }
 
         [HttpGet]
@@ -59,14 +63,25 @@ namespace MovieStoreWebApi.Controllers
                 Name = model.Name,
                 Surname = model.Surname,
             };
-
-            var result = _directorRepository.AddT(directorVm);
-            if (result == null)
-                return BadRequest();
+            var validateResult = _directorRequestVMValidator.Validate(model);
+            var messages = new List<string>();
+            if (validateResult.IsValid)
+            {
+                _directorRepository.AddT(directorVm);
+                messages.Add("Başarılı");
+                return Ok(messages);
+                
+            }
             else
             {
-                return Ok(result);
+                foreach (var item in validateResult.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+                }
+                return BadRequest(messages);
             }
+
+           
         }
 
         [HttpPut]
@@ -81,16 +96,31 @@ namespace MovieStoreWebApi.Controllers
                 get.Name = model.Name;
                 get.Surname = model.Surname;
             }
-            _directorRepository.UpdateById(get);
-            var result = _directorRepository.GetById(id);
-            DirectorResponseVM vm = new DirectorResponseVM
+            var resultValidation = _directorRequestVMValidator.Validate(model);
+            var messages = new List<string>();
+            if (resultValidation.IsValid)
             {
-                Id = result.Id,
-                Name = result.Name,
-                Surname = result.Surname,
-                Active = result.Active,
-            };
-            return Ok(vm);
+                _directorRepository.UpdateById(get);
+                var result = _directorRepository.GetById(id);
+                DirectorResponseVM vm = new DirectorResponseVM
+                {
+                    Active = result.Active,
+                    Id = result.Id,
+                    Name = result.Name,
+                    Surname = result.Surname,
+                };
+                messages.Add("Başarılı");
+                return Ok(messages);
+            }
+            else
+            {
+                foreach (var item in resultValidation.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+                }
+                return BadRequest(messages);
+            }
+           
         }
         [HttpDelete]
         [Route("DirectorDelete")]

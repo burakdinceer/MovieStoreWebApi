@@ -1,4 +1,5 @@
-﻿using MovieStoreWebApi.Entites;
+﻿using FluentValidation;
+using MovieStoreWebApi.Entites;
 using System;
 
 namespace MovieStoreWebApi.MovieModels.Response
@@ -11,7 +12,14 @@ namespace MovieStoreWebApi.MovieModels.Response
         public string Genre { get; set; }
         public int Price { get; set; }
         public bool Active { get; set; } = true;
+        public string DirectorNames { get; set; }
+        public string DirectorSurnames { get; set; }
+        public string RoleNames { get; set; }
+        public string RoleSurnames { get; set; }
+
 
 
     }
+
+    
 }

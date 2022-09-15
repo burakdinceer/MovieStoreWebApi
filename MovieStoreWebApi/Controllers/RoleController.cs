@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MovieStoreWebApi.Entites;
 using MovieStoreWebApi.Interfaces;
@@ -15,9 +16,11 @@ namespace MovieStoreWebApi.Controllers
     {
 
         private readonly IGenericRepository<Role> _roleRepository;
-        public RoleController(IGenericRepository<Role> roleRepository)
+        private readonly IValidator<RoleRequestVM> _roleRequestVMValidation;
+        public RoleController(IGenericRepository<Role> roleRepository, IValidator<RoleRequestVM> roleRequestVMValidation)
         {
             _roleRepository = roleRepository;
+            _roleRequestVMValidation = roleRequestVMValidation;
         }
         [HttpGet]
         [Route("RoleList")]
@@ -56,12 +59,21 @@ namespace MovieStoreWebApi.Controllers
                 Name = model.Name,
                 Surname = model.Surname
             };
-            var result = _roleRepository.AddT(newRole);
-            if (result == null)
-                return BadRequest();
+            var resultValidation = _roleRequestVMValidation.Validate(model);
+            var messages = new List<string>();
+            if (resultValidation.IsValid)
+            {
+                _roleRepository.AddT(newRole);
+                messages.Add("Başaralı");
+                return Ok(messages);
+            }
             else
             {
-                return Ok(result);
+                foreach (var item in resultValidation.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+                }
+                return BadRequest(messages);
             }
         }
 
@@ -77,16 +89,31 @@ namespace MovieStoreWebApi.Controllers
                 get.Name = model.Name;
                 get.Surname = model.Surname;
             };
-            _roleRepository.UpdateById(get);
-            var result = _roleRepository.GetById(id);
-            RoleResponseVM vm = new RoleResponseVM
+            var resultValidation = _roleRequestVMValidation.Validate(model);
+            var messages = new List<string>();
+            if (resultValidation.IsValid)
             {
-                Id = result.Id,
-                Name = result.Name,
-                Surname = result.Surname,
-                Active = result.Active
-            };
-            return Ok(vm);
+                _roleRepository.UpdateById(get);
+                var result = _roleRepository.GetById(id);
+                RoleResponseVM vm = new RoleResponseVM
+                {
+                    Id = result.Id,
+                    Name = result.Name,
+                    Surname = result.Surname,
+                    Active = result.Active
+                };
+                messages.Add("Başarılı");
+                return Ok(messages);
+            }
+            else
+            {
+                foreach (var item in resultValidation.Errors)
+                {
+                    messages.Add(item.ErrorMessage);
+                }
+                return BadRequest(messages);
+            }
+            
         }
         [HttpDelete]
         [Route("RoleDelete")]

@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +12,10 @@ using Microsoft.OpenApi.Models;
 using MovieStoreWebApi.DBOperations;
 using MovieStoreWebApi.Entites;
 using MovieStoreWebApi.Interfaces;
+using MovieStoreWebApi.Models.ModelsDirector.Request;
+using MovieStoreWebApi.ModelsCustomer.Request;
+using MovieStoreWebApi.ModelsRole.Request;
+using MovieStoreWebApi.MovieModels.Request;
 using MovieStoreWebApi.Repositories;
 using System;
 using System.Collections.Generic;
@@ -37,8 +43,11 @@ namespace MovieStoreWebApi
             {
                 opt.UseSqlServer("Server=DESKTOP-7IFFEOA\\SQLEXPRESS;Database=MovieDb;Trusted_Connection=True");
             });
-
-
+            services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
+            services.AddSingleton<IValidator<AddRequestVM>, AddRequestVMValidator>();
+            services.AddSingleton<IValidator<DirectorRequestVM>, DirectorRequestVMValidator>();
+            services.AddSingleton<IValidator<CustomerRequestVm>, CustomerRequestVmValidator>();
+            services.AddSingleton<IValidator<RoleRequestVM>, RoleRequestVMValidator>();
             services.AddScoped<IGenericRepository<Movie>, GenericRepository<Movie>>();
             services.AddScoped<IGenericRepository<Customer>, GenericRepository<Customer>>();
             services.AddScoped<IGenericRepository<Director>, GenericRepository<Director>>();
@@ -47,7 +56,7 @@ namespace MovieStoreWebApi
             services.AddScoped<IGenericRepository<MovieRole>, GenericRepository<MovieRole>>();
             services.AddScoped<IGenericRepository<Purchase>, GenericRepository<Purchase>>();
             services.AddScoped<IGenericRepository<Role>, GenericRepository<Role>>();
-           
+            
 
 
             services.AddSwaggerGen(c =>
